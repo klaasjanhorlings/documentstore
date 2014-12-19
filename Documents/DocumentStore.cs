@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Documents
 {
-    public class DocumentStore
+    public sealed class DocumentStore
     {
         private IDocumentsContext Context;
         private IBlobStore BlobStore;
@@ -27,7 +27,8 @@ namespace Documents
 
         public void Delete()
         {
-            ((DbContext)Context).Entry(Entity).State = EntityState.Deleted;
+            RootFolder.DeleteRoot();
+            Context.DocumentStores.Remove(Entity);
             ((DbContext)Context).SaveChanges();
         }
 

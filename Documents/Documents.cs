@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Documents
 {
-    public class Documents : IDisposable
+    public sealed class Documents
     {
         private IDocumentsContext Context;
         private IBlobStore BlobStore;
@@ -49,11 +49,6 @@ namespace Documents
                 return null;
 
             return new DocumentStore(store, Context, BlobStore);
-        }
-
-        public void Dispose()
-        {
-            Context = null;
         }
     }
 }

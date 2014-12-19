@@ -55,7 +55,7 @@
     <Compile Include="Entities\IDocumentsContext.cs" />
     <Compile Include="Folder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Storage\BlobStore.cs" />
+    <Compile Include="Storage\DefaultBlobStore.cs" />
     <Compile Include="Storage\IBlobStore.cs" />
     <Compile Include="Storage\IPathStrategy.cs" />
   </ItemGroup>

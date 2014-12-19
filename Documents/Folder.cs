@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Documents
 {
-    public class Folder
+    public sealed class Folder
     {
         private FolderEntity Entity;
         private IDocumentsContext Context;
@@ -113,12 +113,27 @@ namespace Documents
             if (Parent == null)
                 throw new InvalidOperationException("Cannot delete root folder. Delete DocumentStore instead");
 
-            foreach (var childFolder in Folders) { 
+            // Delete all child folders
+            foreach (var childFolder in Folders)
+            {
                 childFolder.Delete();
             }
 
+            // Update graph
             Parent._Folders.Remove(this);
 
+            // And persist self
+            ((DbContext)Context).Entry<FolderEntity>(Entity).State = EntityState.Deleted;
+            ((DbContext)Context).SaveChanges();
+        }
+
+        internal void DeleteRoot() 
+        {
+            foreach (var childFolder in Folders)
+            {
+                childFolder.Delete();
+            }
+            
             ((DbContext)Context).Entry<FolderEntity>(Entity).State = EntityState.Deleted;
             ((DbContext)Context).SaveChanges();
         }

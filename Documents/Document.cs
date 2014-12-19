@@ -3,12 +3,13 @@ using Documents.Storage;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Text;
 
 namespace Documents
 {
-    public class Document
+    public sealed class Document
     {
         private DocumentEntity Entity;
         private IDocumentsContext Context;
@@ -32,6 +33,11 @@ namespace Documents
             : this(entity, documentStore, context, blobStore)
         {
             Parent = parent;
+        }
+
+        public Stream GetStream()
+        {
+            return BlobStore.Get(Convert.FromBase64String(Entity.BlobReference));
         }
 
         public void Rename(string name)

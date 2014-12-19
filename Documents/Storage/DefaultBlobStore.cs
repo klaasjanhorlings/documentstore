@@ -4,12 +4,11 @@ using System.Security.Cryptography;
 
 namespace Documents.Storage
 {
-    public class BlobStore : IBlobStore
+    public sealed class DefaultBlobStore : IBlobStore
     {
         private IPathStrategy PathStrategy;
-        public HashAlgorithm HashAlgorithm = new SHA1CryptoServiceProvider();
 
-        public BlobStore(IPathStrategy pathStrategy)
+        public DefaultBlobStore(IPathStrategy pathStrategy)
         {
             if (pathStrategy == null)
                 throw new ArgumentNullException("pathStrategy");
@@ -30,22 +29,26 @@ namespace Documents.Storage
 
         private byte[] _Store(Stream stream)
         {
-            var tempFile = PathStrategy.GetTemporaryPath();
+            var tempFilePath = PathStrategy.GetTemporaryPath();
 
             // Write stream to temporary file while generating a hash
-            HashAlgorithm.Clear();
-            using (var cryptoStream = new CryptoStream(stream, HashAlgorithm, CryptoStreamMode.Read))
+            var algo = new SHA1CryptoServiceProvider();
+            using (var cryptoStream = new CryptoStream(stream, algo, CryptoStreamMode.Read))
             {
-                using (var fileStream = File.OpenWrite(tempFile))
+                using (var fileStream = File.OpenWrite(tempFilePath))
                 {
                     cryptoStream.CopyTo(fileStream);
-                    cryptoStream.FlushFinalBlock();
+                    fileStream.Close();
                 }
             }
-            var hash = HashAlgorithm.Hash;
+
+            // Read out hash and release hash algorithm
+            var hash = algo.Hash;
+            algo.Clear();
 
             // And move it to it's final destination
-            File.Move(tempFile, PathStrategy.GetPath(hash));
+            var destination = PathStrategy.GetPath(hash);
+            File.Move(tempFilePath, destination);
 
             return hash;
         }
